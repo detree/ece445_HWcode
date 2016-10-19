@@ -12,34 +12,37 @@
  * This Library is licensed under a GPLv3 License
  **********************************************************************************************/
 
-#if ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
-#include <FlowPID.h>
+#include "FlowPID.h"
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
-PID::PID(double* Input, double* Output, double* Setpoint,
-         double Kp, double Ki, double Kd, int ControllerDirection)
+FlowPID::FlowPID(double* Input, double* Output, double* Setpoint,
+         double Kp, double Ki, double Kd, QueueList<unsigned long>* FlowRecordin)
 {
     
     myOutput = Output;
     myInput = Input;
     mySetpoint = Setpoint;
-    inAuto = false;
+    FlowRecord = FlowRecordin;
     
-    PID::SetOutputLimits(0, 255);				//default output limit corresponds to
-    //the arduino pwm limits
+    FlowPID::SetOutputLimits(0, 255);	//default output limit corresponds to the arduino pwm limits
     
-    SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
-    
-    PID::SetControllerDirection(ControllerDirection);
-    PID::SetTunings(Kp, Ki, Kd);
-    
-    lastTime = millis()-SampleTime;
+    FlowPID::SetTunings(Kp, Ki, Kd);
+}
+
+double FlowPID::Compute(){
+    double ret = 0;
+    if(ret < outMin)
+        ret = outMin;
+    else if(ret > outMax)
+        ret = outMax;
+    return ret;
+}
+
+void FlowPID::SetOutputLimits(double floor, double ceil){
+    outMin = floor;
+    outMax = ceil;
 }
