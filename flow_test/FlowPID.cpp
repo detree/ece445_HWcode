@@ -14,12 +14,6 @@
 
 
 #include "FlowPID.h"
-#define COMPILE_XCODE 1
-#ifdef COMPILE_XCODE
-    #define NULL nullptr
-    void noInterrupts(){;}
-    void interrupts(){;}
-#endif
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
@@ -52,13 +46,16 @@ double FlowPID::Compute(){
     double ret = 0;
     unsigned long currT = 0;
     while(1){
-        noInterrupts();
+        //noInterrupts();
         if(!FlowRecord->isEmpty()){
             currT = FlowRecord->pop();
         }
-        interrupts();
+        else{
+          break;
+        }
+        //interrupts();
         unsigned long dT = currT - lastT;
-        ret = ret + kp*dT*defRate + kd*double(dT-lastdT)*defRate;
+        ret = ret + defRate + kp*dT + kd*double(dT-lastdT);
         lastT = currT;
         lastdT = dT;
     }
