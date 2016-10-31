@@ -30,7 +30,7 @@ FlowPID::FlowPID(double* Output, double timeoutin,
     if(defRatein != NULL)
         defRate = *defRatein;
     else
-        defRate = 1.0/3.0;
+        defRate = 2.0/17.0;
     
     lastT = 0;
     lastdT = 0;
@@ -47,6 +47,7 @@ double FlowPID::Compute(){
     unsigned long currT = 0;
     while(1){
         //noInterrupts();
+        Serial.println("asdf");
         if(!FlowRecord->isEmpty()){
             currT = FlowRecord->pop();
         }
@@ -55,7 +56,7 @@ double FlowPID::Compute(){
         }
         //interrupts();
         unsigned long dT = currT - lastT;
-        ret = ret + defRate + kp*dT + kd*double(dT-lastdT);
+        ret = ret + defRate + kp*(double)dT + kd*double(dT-lastdT);
         lastT = currT;
         lastdT = dT;
     }
@@ -68,7 +69,7 @@ double FlowPID::Compute(){
 
 void FlowPID::ResetVal(){
     lastdT = 0;
-    lastT = 0;
+    lastT = millis();
     inteErr = 0;
 }
 
