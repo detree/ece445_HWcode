@@ -12,8 +12,9 @@ byte LEDstat = HIGH;
 long lastT = 0;
 long lastdT = 0;
 double inteErr = 0.0;
-const int timeout = 100;
-const double defRate = 3.0/20.0, kp = -0.4, kd = 0.007, ki = 0;
+double kdimpact = 0.0, kpimpact = 0.0, defimpact = 0.0;
+const int timeout = 300;
+const double defRate = 0.2, kp = -5.95, kd = 0.25, ki = 0;
 void setup() {
   //debugging info
   Serial.begin(9600);
@@ -27,6 +28,8 @@ void setup() {
   accumWater = 0;
   lastT = 0;
   lastdT = 0;
+  kdimpact = 0.0;
+  kpimpact = 0.0;
   pinMode(flowSensor1Pin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(flowSensor1Pin), flow1ISR, CHANGE);
   //attachInterrupt(digitalPinToInterrupt(flowSensor2Pin), flow2ISR, CHANGE);
@@ -50,7 +53,12 @@ void loop() {
     Serial.print(accumWater);
     Serial.print(" ml ");
     Serial.print(pulsecnt);
-    Serial.println("pulses,");
+    Serial.print("pulses, kpimpact=");
+    Serial.print(kpimpact);
+    Serial.print(" kdimpact=");
+    Serial.print(kdimpact);
+    Serial.print(" defimpact=");
+    Serial.println(defimpact);
   }
 
 }
@@ -67,9 +75,19 @@ void flow1ISR(){
   pulsecnt++;
   long dT = currT - lastT;
   //Serial.println(dT);
-  accumWater = accumWater + defRate + kd*double(dT-lastdT);
-  if(dT>0)
-    accumWater += (kp/double(dT));
+  accumWater = accumWater + defRate; 
+  if(abs(dT)>=50){
+    accumWater+=0.1;
+    defimpact+=0.1;
+  }
+  if(dT!=0){
+    accumWater += (kp/(tan(double(dT)/40.0)*180.0));
+    kpimpact += (kp/(tan(double(dT)/40.0)*180.0));
+  }
+  if(dT-lastdT!=0){
+    accumWater += (kd/double(dT-lastdT));
+    kdimpact += (kd/double(dT-lastdT));
+  }
   lastT = currT;
   lastdT = dT;
 }
