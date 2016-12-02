@@ -99,7 +99,7 @@ void loop() {
       FSR2val += analogRead(FSR2pin);
     FSR2val/=10;
     //Serial.println(FSR2val);
-    weight = 6.5*double(FSR2val-360 )+88.24;
+    weight = 6.5*double(FSR2val-337)+88.24;
     accumWater = 0;
     backWater = 0;
     weightResendNeed = true;
@@ -122,11 +122,12 @@ void loop() {
     LEDstat = !LEDstat;
     lastsec = currtime/timesplit;
     //=======BT to Android communication=========
-    String msg = String(updateV)+PartSep+String(int(accumWater-backWater))+SentSep;
+    String msg = "";
     if(weightResendNeed){
       msg = msg+updateW+PartSep+String((int)weight)+SentSep;
       weightResendNeed = false;
     }
+    msg = msg+String(updateV)+PartSep+String(int(accumWater-backWater))+SentSep;
     Serial.println(msg);
     
 //    USBdebug(currtime);
